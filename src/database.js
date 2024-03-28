@@ -8,6 +8,11 @@ const db = new sqlite3.Database('./db/TRANSACTIONS.db', (err)=>{
 
     db.run('PRAGMA foreign_keys = ON;', (err)=>{
 
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+
         db.run(`CREATE TABLE IF NOT EXISTS users(
             user_id INTEGER PRIMARY KEY AUTOINCREMENT
         )`, (err)=>{
