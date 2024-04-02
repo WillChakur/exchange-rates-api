@@ -14,7 +14,8 @@ const db = new sqlite3.Database('./db/TRANSACTIONS.db', (err)=>{
         }
 
         db.run(`CREATE TABLE IF NOT EXISTS users(
-            user_id INTEGER PRIMARY KEY AUTOINCREMENT
+            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_name TEXT
         )`, (err)=>{
             if(err){
                 console.error("Error creating users table:", err.message);

@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 
-const api_key = '6697bb15f7b71b39102e3a289cf6f151';
+const api_key = require('./api_key.js');
 const db = require('./database.js');
 
 const app = express();
@@ -10,6 +10,43 @@ const PORT = 8000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.unsubscribe(bodyParser.json());
+
+
+// Testing the insert user endpoint
+app.get('/insert_user', (req, res)=>{
+    let sql = 'insert into users(user_name) values (?)';
+    let params = ['Jackieline'];
+    
+    db.run(sql, params, function(err, result){
+        if(err){
+            res.json({error: err.message});
+            return;
+        }
+        res.json({
+            message: 'success',
+            data: result,
+            id: this.lastID
+        })
+    })
+})
+
+// Testing the insert transaction endpoint
+app.get('/insert_transaction/:id', (req, res)=>{
+    let sql = 'insert into transactions(base_currency, base_value, brl, usd, eur, jpy, user_id) values (?, ?, ?, ?, ?, ?, ?)';
+    let params = ['BRL', 1, 5.43208, 1.074553, 1, 162.95606, req.params.id];
+    
+    db.run(sql, params, function(err, result){
+        if(err){
+            res.json({error: err.message});
+            return;
+        }
+        res.json({
+            message: 'success',
+            data: result,
+            id: this.lastID
+        })
+    })
+})
 
 // Latest currencies with base EUR
 app.get('/currencies', (req, res)=>{
