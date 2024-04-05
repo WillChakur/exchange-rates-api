@@ -1,25 +1,24 @@
 const express = require('express');
 const axios = require('axios');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const api_key = require('./api_key.js');
 const db = require('./database.js');
-
+const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
 const app = express();
 const PORT = 8000;
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.unsubscribe(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }));
+// app.unsubscribe(bodyParser.json());
 
 // Latest currencies with base EUR
 app.get('/get_currency/:id', (req, res)=>{
-    //const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
-    const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
     axios.get(url_currencies)
     .then(response => {
-        res.json({data: response.data});
-        console.log('antes passei aqui');
+        res.json({
+            message: response.data.success,
+            data: response.data
+        });
         let sqlCheckUserExists = 'SELECT * FROM users WHERE user_id = ?'
-
         db.all(sqlCheckUserExists, req.params.id, (err, row)=>{
             if(err){
                 res.status(500).json({ error:err.message});
@@ -65,14 +64,17 @@ app.get('/user_transaction/:id', (req, res)=>{
     let sqlCheckUserExists = 'SELECT * FROM users WHERE user_id = ?'
     db.all(sqlCheckUserExists, req.params.id, (err, row)=> {
         if (err) {
-            res.status(400).json({ error: err.message});
+            res.json({
+                 errno:err.errno,
+                 error_code:err.code,
+            });
             return;
-        }
+        };
         if(row.length == 0) {
             res.json({ message:'The user does not exist, try another ID'});
             return;
         }else{   
-            let sqlGetTransactions = 'SELEC * FROM transactions WHERE user_id = ?';
+            let sqlGetTransactions = 'SELECT * FROM transactions WHERE user_id = ?';
             db.all(sqlGetTransactions, req.params.id, (err, rows)=>{
                 if (err) {
                     res.json({
