@@ -11,82 +11,79 @@ const PORT = 8000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.unsubscribe(bodyParser.json());
 
-
-// Testing the insert user endpoint
-app.get('/insert_user', (req, res)=>{
-    let sql = 'insert into users(user_name) values (?)';
-    let params = ['Jackieline'];
-    
-    db.run(sql, params, function(err, result){
-        if(err){
-            res.json({error: err.message});
-            return;
-        }
-        res.json({
-            message: 'success',
-            data: result,
-            id: this.lastID
-        })
-    })
-})
-
-// Testing the insert transaction endpoint
-app.get('/insert_transaction/:id', (req, res)=>{
-    let sql = 'insert into transactions(base_currency, base_value, brl, usd, eur, jpy, user_id) values (?, ?, ?, ?, ?, ?, ?)';
-    let params = ['BRL', 1, 5.43208, 1.074553, 1, 162.95606, req.params.id];
-    
-    db.run(sql, params, function(err, result){
-        if(err){
-            res.json({error: err.message});
-            return;
-        }
-        res.json({
-            message: 'success',
-            data: result,
-            id: this.lastID
-        })
-    })
-})
-
 // Latest currencies with base EUR
-app.get('/currencies', (req, res)=>{
-    const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
+app.get('/get_currency/:id', (req, res)=>{
+
+    const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`
     axios.get(url_currencies)
     .then(response => {
         res.json({data: response.data});
+        
+        let sqlCheckUserExists = 'SELECT * FROM users WHERE user_id = ?'
+
+        db.all(sqlCheckUserExists, req.params.id, (err, row)=>{
+            if(err){
+                res.status(500).json({ error:err.message});
+                return;
+            }
+
+            if(row.length == 0){
+                let sqlInsertUser = 'INSERT INTO users(user_id) VALUES (?)';
+                db.run(sqlInsertUser, req.params.id, (err)=>{
+                    if(err){
+                        res.status(500).json({ error:err.message});
+                        return;
+                    }
+                })
+            }
+
+            let sqlInsertTransaction = `INSERT INTO transactions(base_currency, base_value, brl, usd, eur, jpy, date_time, user_id)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+            let datetime = new Date(response.data.timestamp * 1000);    
+            let datetimeStr = datetime.toString();
+            let params = [response.data.base, 1, response.data.rates.BRL, response.data.rates.USD, response.data.rates.EUR, response.data.rates.JPY, datetimeStr, req.params.id];  
+
+            db.run(sqlInsertTransaction, params, (err)=>{
+                if(err){
+                    res.status(500).json({error:err.message});
+                    return;
+                }
+            });
+        });
     })
     .catch(err => console.log(err));
-})
-
-//Getting users
-app.get('/users', (req, res)=>{
-    let sql = `SELECT * from users`
-    let params = [];
-    db.all(sql, params, (err, rows)=> {
-        if (err) {
-            res.status(400).json({ error: err.message});
-            return;
-        }
-        res.json({
-            message:"success",
-            data:rows
-        })
-    });
 });
 
-//Gettting user transaction
-app.get('/user/:id', (req, res)=>{
-    let sql = `select * from transactions where user_id = ?`
-    let params = [req.params.id];
-    db.all(sql, params, (err, row)=> {
+//Getting user transaction
+app.get('/user_transaction/:id', (req, res)=>{
+    
+    let sqlCheckUserExists = 'SELECT * FROM users WHERE user_id = ?'
+    db.all(sqlCheckUserExists, req.params.id, (err, row)=> {
         if (err) {
             res.status(400).json({ error: err.message});
             return;
         }
-        res.json({
-            message:"success",
-            data:row
-        })
+
+        if(row.length == 0) {
+            console.log("The user does not exist");
+            return;
+        }else{
+            let sqlGetTransactions = 'SELECT * FROM transactions WHERE user_id = ?';
+
+            db.all(sqlGetTransactions, req.params.id, (err, rows)=>{
+
+                if (err) {
+                    res.status(400).json({ error:err.message});
+                    return;
+                }
+        
+                res.json({
+                    message:"success",
+                    data: rows
+                })
+            });
+        }
     });
 });
 
