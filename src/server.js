@@ -1,7 +1,6 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const axios = require('axios');
-
+const bodyParser = require('body-parser');
 const api_key = require('./api_key.js');
 const db = require('./database.js');
 
@@ -13,12 +12,12 @@ app.unsubscribe(bodyParser.json());
 
 // Latest currencies with base EUR
 app.get('/get_currency/:id', (req, res)=>{
-
-    const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`
+    //const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
+    const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
     axios.get(url_currencies)
     .then(response => {
         res.json({data: response.data});
-        
+        console.log('antes passei aqui');
         let sqlCheckUserExists = 'SELECT * FROM users WHERE user_id = ?'
 
         db.all(sqlCheckUserExists, req.params.id, (err, row)=>{
@@ -52,7 +51,12 @@ app.get('/get_currency/:id', (req, res)=>{
             });
         });
     })
-    .catch(err => console.log(err));
+    .catch((error) => {
+        res.json({
+            status:error.response.status,
+            data:error.response.data,
+        })
+    });
 });
 
 //Getting user transaction
@@ -64,24 +68,23 @@ app.get('/user_transaction/:id', (req, res)=>{
             res.status(400).json({ error: err.message});
             return;
         }
-
         if(row.length == 0) {
-            console.log("The user does not exist");
+            res.json({ message:'The user does not exist, try another ID'});
             return;
-        }else{
-            let sqlGetTransactions = 'SELECT * FROM transactions WHERE user_id = ?';
-
+        }else{   
+            let sqlGetTransactions = 'SELEC * FROM transactions WHERE user_id = ?';
             db.all(sqlGetTransactions, req.params.id, (err, rows)=>{
-
                 if (err) {
-                    res.status(400).json({ error:err.message});
+                    res.json({
+                         errno:err.errno,
+                         error_code:err.code,
+                    });
                     return;
-                }
-        
+                };
                 res.json({
-                    message:"success",
+                    message:`User ${req.params.id} transactions`,
                     data: rows
-                })
+                });
             });
         }
     });
