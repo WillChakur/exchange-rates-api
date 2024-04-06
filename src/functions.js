@@ -8,26 +8,31 @@ function getTransactions(user_ID) {
         db.all(sqlCheckUserExists, user_ID, (err, row)=> {
             if (err) {
                 reject({
+                    success: false,
                     errno:err.errno,
                     error_code:err.code,
                 })
                 return;
             };
             if(row.length == 0) {
-                resolve({
+                reject({
+                    success: false,
                     message: 'The user does not exist, try another ID'
                 });
+                return;
             }else{   
                 let sqlGetTransactions = 'SELECT * FROM transactions WHERE user_id = ?';
                 db.all(sqlGetTransactions, user_ID, (err, rows)=>{
                     if (err) {
                         reject({
+                            success: false,
                             errno:err.errno,
                             error_code:err.code
                         });
                         return;
                     }else{
                         resolve({
+                            success: true,
                             message:`User ${user_ID} transactions`,
                             data: rows
                         });
@@ -104,17 +109,25 @@ function insertTransaction(response, user_ID) {
 function deleteUser(user_ID){
     let query = 'DELETE FROM users WHERE user_id = ?';
     return new Promise((resolve, reject) => {
-        db.run(query, user_ID, (err)=>{
+        db.run(query, user_ID, function(err){
             if(err){
                 reject({
                     success: false,
                     error: err.message
                 });
+                return;
             }
-            resolve({
-                success: true,
-                message: 'User deleted.'
-            });
+            if(this.changes === 0){
+                reject({
+                    success: false,
+                    message: 'The user does not exist'
+                });
+            }else{
+                resolve({
+                    success: true,
+                    message: 'User deleted.'
+                });
+            };
         });
     });
 };

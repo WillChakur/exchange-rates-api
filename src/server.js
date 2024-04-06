@@ -7,7 +7,7 @@ const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${ap
 const app = express();
 const PORT = 8000;
 
-const {insertUser, insertTransaction, getTransactions, deleteLastTransaction} = require('../src/functions.js');
+const {insertUser, insertTransaction, getTransactions, deleteLastTransaction, deleteUser} = require('../src/functions.js');
 
 // Latest currencies with base EUR
 app.get('/get_currency/:id', (req, res)=>{
@@ -52,6 +52,16 @@ app.get('/insert_user/:id', async (req, res)=>{
 app.get('/delete_transaction/:id', async (req, res)=>{
     try{
         const result = await deleteLastTransaction(req.params.id);
+        res.json(result);
+    }catch(error){
+        res.json(error)
+    }
+})
+
+//Testing delete user
+app.get('/delete_user/:id', async (req, res)=>{
+    try{
+        const result = await deleteUser(req.params.id);
         res.json(result);
     }catch(error){
         res.json(error)
