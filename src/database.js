@@ -31,8 +31,8 @@ const db = new sqlite3.Database('./db/TRANSACTIONS.db', (err)=>{
             usd REAL,
             eur REAL,
             jpy REAL,
-            date_time TEXT,
-            user_id INTEGER,
+            date_time,
+            user_id,
             FOREIGN KEY(user_id) REFERENCES users(user_id)
         )`, (err)=>{
             if(err){

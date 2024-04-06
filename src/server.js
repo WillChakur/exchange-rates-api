@@ -3,12 +3,11 @@ const axios = require('axios');
 const api_key = require('./api_key.js');
 const db = require('./database.js');
 
-
 const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
 const app = express();
 const PORT = 8000;
 
-const {insertUser, insertTransaction, getTransactions} = require('../src/functions.js');
+const {insertUser, insertTransaction, getTransactions, deleteLastTransaction} = require('../src/functions.js');
 
 // Latest currencies with base EUR
 app.get('/get_currency/:id', (req, res)=>{
@@ -17,7 +16,6 @@ app.get('/get_currency/:id', (req, res)=>{
         res.json({
             data:response.data
         });
-        insertUser(res, req.params.id);
         insertTransaction(response, req.params.id);
     }).catch((error)=>{
         res.json({
@@ -28,8 +26,36 @@ app.get('/get_currency/:id', (req, res)=>{
 });
 
 //Getting user transaction
-app.get('/user_transaction/:id', (req, res)=>{
-    getTransactions(res, req.params.id);
+app.get('/user_transaction/:id', async(req, res)=>{
+    try{
+        const result = await getTransactions(req.params.id);
+        res.json(result)
+    }catch(error){
+        res.json(error)
+    };
+});
+
+//Testing insert user
+app.get('/insert_user/:id', async (req, res)=>{
+    let query_1 = 'SELECT * FROM users WHERE user_id = ?';
+    let query_2 = 'INSERT INTO users(user_id) VALUES (?)';
+    
+    try{
+        let result = await insertUser(query_1, query_2, req.params.id);
+        res.json(result);
+    }catch(error){
+        res.status(400).json(error);
+    }
+});
+
+//Testing delete function
+app.get('/delete_transaction/:id', async (req, res)=>{
+    try{
+        const result = await deleteLastTransaction(req.params.id);
+        res.json(result);
+    }catch(error){
+        res.json(error)
+    }
 })
 
 app.listen(PORT, (err)=>{
