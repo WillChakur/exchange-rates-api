@@ -1,4 +1,4 @@
-const {getTransactions, insertUser, deleteUser} = require('../src/functions');
+const {getTransactions, insertUser} = require('../src/functions');
 
 test("Should return the user transactions if the user exist", async()=>{
     const user_ID = 1;

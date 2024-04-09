@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const api_key = require('./api_key.js');
-const db = require('./database.js');
+const logger = require('./logger.js');
 
 const url_currencies = `http://api.exchangeratesapi.io/v1/latest?access_key=${api_key}&base=EUR&symbols=BRL,USD,EUR,JPY`;
 const app = express();
@@ -29,6 +29,7 @@ app.get('/get_currency/:id', (req, res)=>{
 app.get('/user_transaction/:id', async(req, res)=>{
     try{
         const result = await getTransactions(req.params.id);
+        logger.info('Testing Winston');
         res.json(result)
     }catch(error){
         res.json(error)
