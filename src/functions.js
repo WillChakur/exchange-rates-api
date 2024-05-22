@@ -1,5 +1,4 @@
-const { query } = require('express');
-const db = require('./database.js');
+const db = require("./database.js");
 
 function getTransactions(user_ID) {
     let sqlCheckUserExists = "SELECT * FROM users WHERE user_id = ?";
@@ -17,11 +16,11 @@ function getTransactions(user_ID) {
             if(row.length == 0) {
                 reject({
                     success: false,
-                    message: 'The user does not exist, try another ID'
+                    message: "The user does not exist, try another ID"
                 });
                 return;
             }else{   
-                let sqlGetTransactions = 'SELECT * FROM transactions WHERE user_id = ?';
+                let sqlGetTransactions = "SELECT * FROM transactions WHERE user_id = ?";
                 db.all(sqlGetTransactions, user_ID, (err, rows)=>{
                     if (err) {
                         reject({
@@ -80,8 +79,8 @@ function insertUser(query_1, query_2, user_ID){
 
 function insertTransaction(response, user_ID) {
     return new Promise((resolve, reject)=>{
-        let query_1 = 'SELECT * FROM users WHERE user_id = ?';
-        let query_2 = 'INSERT INTO users(user_id) VALUES (?)';
+        let query_1 = "SELECT * FROM users WHERE user_id = ?";
+        let query_2 = "INSERT INTO users(user_id) VALUES (?)";
         insertUser(query_1, query_2, user_ID);
         
         let sqlInsertTransaction = `INSERT INTO transactions(base_currency, base_value, brl, usd, eur, jpy, date_time, user_id)
@@ -99,7 +98,7 @@ function insertTransaction(response, user_ID) {
             }else{
                 resolve({
                     success: true,
-                    message: 'Transaction inserted with success'
+                    message: "Transaction inserted with success"
                 });
             };
         });
@@ -107,7 +106,7 @@ function insertTransaction(response, user_ID) {
 };
 
 function deleteUser(user_ID){
-    let query = 'DELETE FROM users WHERE user_id = ?';
+    let query = "DELETE FROM users WHERE user_id = ?";
     return new Promise((resolve, reject) => {
         db.run(query, user_ID, function(err){
             if(err){
@@ -120,12 +119,12 @@ function deleteUser(user_ID){
             if(this.changes === 0){
                 reject({
                     success: false,
-                    message: 'The user does not exist'
+                    message: "The user does not exist"
                 });
             }else{
                 resolve({
                     success: true,
-                    message: 'User deleted.'
+                    message: "User deleted."
                 });
             };
         });
@@ -152,7 +151,7 @@ function deleteLastTransaction(user_ID){
             }else{
                 resolve({
                     success: true,
-                    message: 'Transaction deleted.'
+                    message: "Transaction deleted."
                 });
             };
         });

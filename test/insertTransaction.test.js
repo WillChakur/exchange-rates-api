@@ -1,4 +1,4 @@
-const {insertTransaction, deleteLastTransaction} = require('../src/functions.js');
+const {insertTransaction, deleteLastTransaction} = require("../src/functions.js");
 
 test("Should insert a transaction", async()=>{
     const response = {

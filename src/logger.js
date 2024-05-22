@@ -1,26 +1,25 @@
-const { format, createLogger, transports, addColors } = require('winston');
+const { format, createLogger, transports } = require("winston");
 
-const { combine, timestamp, label, json, prettyPrint, colorize} = format;
-const CATEGORY = "winston custom format";
+const { combine, timestamp, printf, colorize } = format;
 
-// const customFormat = printf(({ level, message, label, timestamp }) => {
-//     return `${timestamp} [${label}] ${level}: ${message}`;
-// });
-
+const customFormat = printf(({ level, message, timestamp }) => {
+    return `[${level}] ${timestamp}   ${message}`;
+});
 
 const logger = createLogger({
-    level: 'debug',
+    level: "debug",
     format: combine(
-        label({ label: CATEGORY }),
-        json(),
+        colorize(),
         timestamp({
-            format: "MMM-DD-YYYY HH:mm:ss"
+            format: "MMM-DD-YYYY HH:mm:ss",
         }),
-        prettyPrint(),
+        customFormat
     ),
     transports: [
-        new transports.Console({}),
-        new transports.File({filename: 'src/server.log'})
+        new transports.Console(),
+        new transports.File({
+            filename: "src/server.log",
+        })
     ],
 });
 

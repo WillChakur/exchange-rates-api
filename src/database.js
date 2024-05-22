@@ -1,12 +1,12 @@
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require("sqlite3").verbose();
 
-const db = new sqlite3.Database('./db/TRANSACTIONS.db', (err)=>{
+const db = new sqlite3.Database("./db/TRANSACTIONS.db", (err)=>{
     if(err) {
         console.log(err.message);
         throw err;
     }
 
-    db.run('PRAGMA foreign_keys = ON;', (err)=>{
+    db.run("PRAGMA foreign_keys = ON;", (err)=>{
 
         if (err) {
             console.log(err.message);
